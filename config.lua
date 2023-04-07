@@ -209,8 +209,10 @@ lvim.plugins = {
         -- refer to the configuration section below
       })
     end
+  },
+  {
+    "rhaiscript/vim-rhai",
   }
-
   -- { "zbirenbaum/copilot-cmp",
   --   after = { "copilot.lua", "nvim-cmp" },
   --   config = function()
