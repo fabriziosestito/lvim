@@ -11,9 +11,9 @@ vim.opt.relativenumber = true
 -- general
 lvim.log.level = "info"
 lvim.format_on_save = {
-  enabled = true,
-  -- pattern = "*.lua",
-  timeout = 1000,
+	enabled = true,
+	-- pattern = "*.lua",
+	timeout = 1000,
 }
 -- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
@@ -76,15 +76,15 @@ lvim.builtin.treesitter.auto_install = true
 -- end
 
 -- -- linters and formatters <https://www.lunarvim.org/docs/languages#lintingformatting>
--- local formatters = require "lvim.lsp.null-ls.formatters"
--- formatters.setup {
---   { command = "stylua" },
---   {
---     command = "prettier",
---     extra_args = { "--print-width", "100" },
---     filetypes = { "typescript", "typescriptreact" },
---   },
--- }
+local formatters = require("lvim.lsp.null-ls.formatters")
+formatters.setup({
+	{ command = "stylua" },
+	{
+		command = "prettier",
+		extra_args = { "--print-width", "100" },
+		filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact", "yaml", "markdown" },
+	},
+})
 -- local linters = require "lvim.lsp.null-ls.linters"
 -- linters.setup {
 --   { command = "flake8", filetypes = { "python" } },
@@ -104,121 +104,121 @@ lvim.builtin.treesitter.auto_install = true
 vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "rust_analyzer" })
 
 lvim.plugins = {
-  { "mcchrish/zenbones.nvim" },
-  { "rose-pine/neovim", dependencies = "rktjmp/lush.nvim" },
-  { "franbach/miramare" },
-  { "nyoom-engineering/oxocarbon.nvim" },
-  {
-    "ray-x/sad.nvim",
-    dependencies = { "ray-x/guihua.lua", run = "cd lua/fzy && make" },
-    config = function()
-      require("sad").setup {}
-    end,
-  },
-  { "zbirenbaum/copilot.lua",
-    event = { "VimEnter" },
-    config = function()
-      vim.defer_fn(function()
-        require("copilot").setup {
-          plugin_manager_path = get_runtime_dir() .. "/site/pack/packer",
-          suggestion = { enabled = true, auto_trigger = true },
-        }
-      end, 100)
-    end,
-  },
-  {
-    "simrat39/rust-tools.nvim",
-    config = function()
-    end
-    -- ft = { "rust", "rs" },
-  },
-  {
-    "saecki/crates.nvim",
-    version = "v0.3.0",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      require("crates").setup()
-    end,
-  },
-  {
-    "windwp/nvim-spectre",
-    event = "BufRead",
-    config = function()
-      require("spectre").setup()
-    end,
-  },
-  {
-    "nvim-neo-tree/neo-tree.nvim",
-    branch = "v2.x",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-tree/nvim-web-devicons",
-      "MunifTanjim/nui.nvim",
-    },
-    config = function()
-      require("neo-tree").setup({
-        close_if_last_window = true,
-        window = {
-          width = 30,
-        },
-        buffers = {
-          follow_current_file = true,
-        },
-        filesystem = {
-          follow_current_file = true,
-          filtered_items = {
-            hide_dotfiles = false,
-            hide_gitignored = false,
-            hide_by_name = {
-              "node_modules"
-            },
-            never_show = {
-              ".DS_Store",
-              "thumbs.db"
-            },
-          },
-        },
-      })
-    end
-  },
-  {
-    "iamcco/markdown-preview.nvim",
-    build = "cd app && npm install",
-    ft = "markdown",
-    config = function()
-      vim.g.mkdp_auto_start = 1
-    end,
-  },
-  {
-    "kylechui/nvim-surround",
-    version = "*", -- Use for stability; omit to use `main` branch for the latest features
-    config = function()
-      require("nvim-surround").setup({
-        -- Configuration here, or leave empty to use defaults
-      })
-    end
-  },
-  {
-    "gbprod/cutlass.nvim",
-    config = function()
-      require("cutlass").setup({
-        cut_key = "x",
-        override_del = true,
-        -- your configuration comes here
-        -- or leave it empty to use the default settings
-        -- refer to the configuration section below
-      })
-    end
-  },
-  {
-    "rhaiscript/vim-rhai",
-  }
-  -- { "zbirenbaum/copilot-cmp",
-  --   after = { "copilot.lua", "nvim-cmp" },
-  --   config = function()
-  --     require("copilot_cmp").setup()
-  --   end
-  -- },
+	{ "mcchrish/zenbones.nvim" },
+	{ "rose-pine/neovim", dependencies = "rktjmp/lush.nvim" },
+	{ "franbach/miramare" },
+	{ "nyoom-engineering/oxocarbon.nvim" },
+	{
+		"ray-x/sad.nvim",
+		dependencies = { "ray-x/guihua.lua", run = "cd lua/fzy && make" },
+		config = function()
+			require("sad").setup({})
+		end,
+	},
+	{
+		"zbirenbaum/copilot.lua",
+		event = { "VimEnter" },
+		config = function()
+			vim.defer_fn(function()
+				require("copilot").setup({
+					plugin_manager_path = get_runtime_dir() .. "/site/pack/packer",
+					suggestion = { enabled = true, auto_trigger = true },
+				})
+			end, 100)
+		end,
+	},
+	{
+		"simrat39/rust-tools.nvim",
+		config = function() end,
+		-- ft = { "rust", "rs" },
+	},
+	{
+		"saecki/crates.nvim",
+		version = "v0.3.0",
+		dependencies = { "nvim-lua/plenary.nvim" },
+		config = function()
+			require("crates").setup()
+		end,
+	},
+	{
+		"windwp/nvim-spectre",
+		event = "BufRead",
+		config = function()
+			require("spectre").setup()
+		end,
+	},
+	{
+		"nvim-neo-tree/neo-tree.nvim",
+		branch = "v2.x",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-tree/nvim-web-devicons",
+			"MunifTanjim/nui.nvim",
+		},
+		config = function()
+			require("neo-tree").setup({
+				close_if_last_window = true,
+				window = {
+					width = 30,
+				},
+				buffers = {
+					follow_current_file = true,
+				},
+				filesystem = {
+					follow_current_file = true,
+					filtered_items = {
+						hide_dotfiles = false,
+						hide_gitignored = false,
+						hide_by_name = {
+							"node_modules",
+						},
+						never_show = {
+							".DS_Store",
+							"thumbs.db",
+						},
+					},
+				},
+			})
+		end,
+	},
+	{
+		"iamcco/markdown-preview.nvim",
+		build = "cd app && npm install",
+		ft = "markdown",
+		config = function()
+			vim.g.mkdp_auto_start = 1
+		end,
+	},
+	{
+		"kylechui/nvim-surround",
+		version = "*", -- Use for stability; omit to use `main` branch for the latest features
+		config = function()
+			require("nvim-surround").setup({
+				-- Configuration here, or leave empty to use defaults
+			})
+		end,
+	},
+	{
+		"gbprod/cutlass.nvim",
+		config = function()
+			require("cutlass").setup({
+				cut_key = "x",
+				override_del = true,
+				-- your configuration comes here
+				-- or leave it empty to use the default settings
+				-- refer to the configuration section below
+			})
+		end,
+	},
+	{
+		"rhaiscript/vim-rhai",
+	},
+	-- { "zbirenbaum/copilot-cmp",
+	--   after = { "copilot.lua", "nvim-cmp" },
+	--   config = function()
+	--     require("copilot_cmp").setup()
+	--   end
+	-- },
 }
 
 -- -- fab config
@@ -232,62 +232,62 @@ lvim.builtin.which_key.mappings["S"] = { "<cmd>Spectre<CR>", "Spectre" }
 -- configure rust-tools
 local status_ok_rust_tools, rust_tools = pcall(require, "rust-tools")
 if not status_ok_rust_tools then
-  return
+	return
 end
 local opts = {
-  tools = {
-    executor = require("rust-tools/executors").termopen, -- can be quickfix or termopen
-    reload_workspace_from_cargo_toml = true,
-    inlay_hints = {
-      auto = true,
-      only_current_line = false,
-      show_parameter_hints = false,
-      parameter_hints_prefix = "<-",
-      other_hints_prefix = "=>",
-      max_len_align = false,
-      max_len_align_padding = 1,
-      right_align = false,
-      right_align_padding = 7,
-      highlight = "Comment",
-    },
-    hover_actions = {
-      --border = {
-      --        { "╭", "FloatBorder" },
-      --        { "─", "FloatBorder" },
-      --        { "╮", "FloatBorder" },
-      --        { "│", "FloatBorder" },
-      --        { "╯", "FloatBorder" },
-      --        { "─", "FloatBorder" },
-      --        { "╰", "FloatBorder" },
-      --        { "│", "FloatBorder" },
-      --},
-      auto_focus = true,
-    },
-  },
-  server = {
-    on_attach = require("lvim.lsp").common_on_attach,
-    on_init = require("lvim.lsp").common_on_init,
-    -- settings = {
-    --   ["rust-analyzer"] = {
-    --     checkOnSave = {
-    --       command = "clippy"
-    --     }
-    --   }
-    -- },
-  },
+	tools = {
+		executor = require("rust-tools/executors").termopen, -- can be quickfix or termopen
+		reload_workspace_from_cargo_toml = true,
+		inlay_hints = {
+			auto = true,
+			only_current_line = false,
+			show_parameter_hints = false,
+			parameter_hints_prefix = "<-",
+			other_hints_prefix = "=>",
+			max_len_align = false,
+			max_len_align_padding = 1,
+			right_align = false,
+			right_align_padding = 7,
+			highlight = "Comment",
+		},
+		hover_actions = {
+			--border = {
+			--        { "╭", "FloatBorder" },
+			--        { "─", "FloatBorder" },
+			--        { "╮", "FloatBorder" },
+			--        { "│", "FloatBorder" },
+			--        { "╯", "FloatBorder" },
+			--        { "─", "FloatBorder" },
+			--        { "╰", "FloatBorder" },
+			--        { "│", "FloatBorder" },
+			--},
+			auto_focus = true,
+		},
+	},
+	server = {
+		on_attach = require("lvim.lsp").common_on_attach,
+		on_init = require("lvim.lsp").common_on_init,
+		-- settings = {
+		--   ["rust-analyzer"] = {
+		--     checkOnSave = {
+		--       command = "clippy"
+		--     }
+		--   }
+		-- },
+	},
 }
 rust_tools.setup(opts)
 -- configure crates.nvim
 local status_ok_cmp, cmp = pcall(require, "cmp")
 if not status_ok_cmp then
-  return
+	return
 end
 vim.api.nvim_create_autocmd("BufRead", {
-  group = vim.api.nvim_create_augroup("CmpSourceCargo", { clear = true }),
-  pattern = "Cargo.toml",
-  callback = function()
-    cmp.setup.buffer({ sources = { { name = "crates" } } })
-  end,
+	group = vim.api.nvim_create_augroup("CmpSourceCargo", { clear = true }),
+	pattern = "Cargo.toml",
+	callback = function()
+		cmp.setup.buffer({ sources = { { name = "crates" } } })
+	end,
 })
 -- -- fab config end
 --
