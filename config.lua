@@ -123,6 +123,7 @@ lvim.plugins = {
 				require("copilot").setup({
 					plugin_manager_path = get_runtime_dir() .. "/site/pack/packer",
 					suggestion = { enabled = true, auto_trigger = true },
+					filetypes = { yaml = true, markdown = true },
 				})
 			end, 100)
 		end,
