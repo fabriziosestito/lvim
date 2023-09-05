@@ -4,10 +4,10 @@
 ]]
 
 -- vim options
-vim.opt.shiftwidth = 2
-vim.opt.tabstop = 2
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
 vim.opt.relativenumber = true
-
+lvim.builtin.treesitter.indent = { enable = true, disable = { "go" } }
 -- general
 lvim.log.level = "info"
 lvim.format_on_save = {
@@ -29,6 +29,7 @@ lvim.keys.normal_mode["<C-s>"] = ":w<cr>"
 -- -- Use which-key to add extra bindings with the leader-key prefix
 -- lvim.builtin.which_key.mappings["W"] = { "<cmd>noautocmd w<cr>", "Save without formatting" }
 -- lvim.builtin.which_key.mappings["P"] = { "<cmd>Telescope projects<CR>", "Projects" }
+lvim.builtin.which_key.mappings["g"]["m"] = { "<cmd>DiffviewOpen origin/main<cr>", "Git diff main" }
 
 -- -- Change theme settings
 lvim.colorscheme = "oxocarbon"
@@ -84,6 +85,8 @@ formatters.setup({
 		extra_args = { "--print-width", "100" },
 		filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact", "yaml", "markdown" },
 	},
+	{ command = "taplo", filetypes = { "toml" } },
+	{ command = "goimports", filetypes = { "go" } },
 })
 -- local linters = require "lvim.lsp.null-ls.linters"
 -- linters.setup {
@@ -149,40 +152,6 @@ lvim.plugins = {
 		end,
 	},
 	{
-		"nvim-neo-tree/neo-tree.nvim",
-		branch = "v2.x",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			"nvim-tree/nvim-web-devicons",
-			"MunifTanjim/nui.nvim",
-		},
-		config = function()
-			require("neo-tree").setup({
-				close_if_last_window = true,
-				window = {
-					width = 30,
-				},
-				buffers = {
-					follow_current_file = true,
-				},
-				filesystem = {
-					follow_current_file = true,
-					filtered_items = {
-						hide_dotfiles = false,
-						hide_gitignored = false,
-						hide_by_name = {
-							"node_modules",
-						},
-						never_show = {
-							".DS_Store",
-							"thumbs.db",
-						},
-					},
-				},
-			})
-		end,
-	},
-	{
 		"iamcco/markdown-preview.nvim",
 		build = "cd app && npm install",
 		ft = "markdown",
@@ -214,12 +183,9 @@ lvim.plugins = {
 	{
 		"rhaiscript/vim-rhai",
 	},
-	-- { "zbirenbaum/copilot-cmp",
-	--   after = { "copilot.lua", "nvim-cmp" },
-	--   config = function()
-	--     require("copilot_cmp").setup()
-	--   end
-	-- },
+	{
+		"sindrets/diffview.nvim",
+	},
 }
 
 -- -- fab config
@@ -268,13 +234,13 @@ local opts = {
 	server = {
 		on_attach = require("lvim.lsp").common_on_attach,
 		on_init = require("lvim.lsp").common_on_init,
-		-- settings = {
-		--   ["rust-analyzer"] = {
-		--     checkOnSave = {
-		--       command = "clippy"
-		--     }
-		--   }
-		-- },
+		settings = {
+			["rust-analyzer"] = {
+				checkOnSave = {
+					command = "clippy",
+				},
+			},
+		},
 	},
 }
 rust_tools.setup(opts)
@@ -290,13 +256,16 @@ vim.api.nvim_create_autocmd("BufRead", {
 		cmp.setup.buffer({ sources = { { name = "crates" } } })
 	end,
 })
+
+require("lvim.lsp.manager").setup("marksman")
 -- -- fab config end
 --
 -- -- Autocommands (`:help autocmd`) <https://neovim.io/doc/user/autocmd.html>
--- vim.api.nvim_create_autocmd("FileType", {
---   pattern = "zsh",
---   callback = function()
---     -- let treesitter use bash highlight for zsh files as well
---     require("nvim-treesitter.highlight").attach(0, "bash")
---   end,
+-- vim.api.nvim_create_autocmd("BufRead", {
+-- 	pattern = "go",
+-- 	callback = function()
+-- 		-- let treesitter use bash highlight for zsh files as well
+-- 		vim.cmd("setlocal ts=8")
+-- 	end,
 -- })
+--
