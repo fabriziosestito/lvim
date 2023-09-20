@@ -33,6 +33,7 @@ lvim.builtin.which_key.mappings["g"]["m"] = { "<cmd>DiffviewOpen origin/main<cr>
 
 -- -- Change theme settings
 lvim.colorscheme = "oxocarbon"
+-- lvim.colorscheme = "zenbones"
 
 lvim.builtin.alpha.active = true
 lvim.builtin.alpha.mode = "dashboard"
@@ -44,6 +45,10 @@ lvim.builtin.nvimtree.setup.actions.open_file.resize_window = false
 -- Automatically install missing parsers when entering buffer
 lvim.builtin.treesitter.auto_install = true
 
+lvim.builtin.treesitter.ensure_installed = {
+	"go",
+	"gomod",
+}
 -- lvim.builtin.treesitter.ignore_install = { "haskell" }
 
 -- -- always installed on startup, useful for parsers without a strict filetype
@@ -52,11 +57,12 @@ lvim.builtin.treesitter.auto_install = true
 -- -- generic LSP settings <https://www.lunarvim.org/docs/languages#lsp-support>
 
 -- --- disable automatic installation of servers
--- lvim.lsp.installer.setup.automatic_installation = false
+lvim.lsp.installer.setup.automatic_installation = true
 
 -- ---configure a server manually. IMPORTANT: Requires `:LvimCacheReset` to take effect
 -- ---see the full default list `:lua =lvim.lsp.automatic_configuration.skipped_servers`
--- vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "pyright" })
+-- vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "lua_ls" })
+
 -- local opts = {} -- check the lspconfig documentation for a list of all possible options
 -- require("lvim.lsp.manager").setup("pyright", opts)
 
@@ -83,11 +89,22 @@ formatters.setup({
 	{
 		command = "prettier",
 		extra_args = { "--print-width", "100" },
-		filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact", "yaml", "markdown" },
+		filetypes = {
+			"typescript",
+			"typescriptreact",
+			"javascript",
+			"javascriptreact",
+			"yaml",
+			"yml",
+			"markdown",
+			"json",
+		},
 	},
 	{ command = "taplo", filetypes = { "toml" } },
 	{ command = "goimports", filetypes = { "go" } },
+	{ command = "gofumpt", filetypes = { "go" } },
 })
+
 -- local linters = require "lvim.lsp.null-ls.linters"
 -- linters.setup {
 --   { command = "flake8", filetypes = { "python" } },
@@ -96,15 +113,6 @@ formatters.setup({
 --     args = { "--severity", "warning" },
 --   },
 -- }
-
--- -- Additional Plugins <https://www.lunarvim.org/docs/plugins#user-plugins>
--- lvim.plugins = {
---     {
---       "folke/trouble.nvim",
---       cmd = "TroubleToggle",
---     },
--- }
-vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "rust_analyzer" })
 
 lvim.plugins = {
 	{ "mcchrish/zenbones.nvim" },
@@ -186,21 +194,25 @@ lvim.plugins = {
 	{
 		"sindrets/diffview.nvim",
 	},
+	{
+		"olexsmir/gopher.nvim",
+		"leoluz/nvim-dap-go",
+	},
 }
 
 -- -- fab config
 -- mappings
 lvim.builtin.which_key.mappings["P"] = { "<cmd>Telescope projects<CR>", "Projects" }
 lvim.builtin.which_key.mappings["S"] = { "<cmd>Spectre<CR>", "Spectre" }
--- configure neotree
 
--- lvim.builtin.nvimtree.active = false -- NOTE: using neo-tree
--- lvim.builtin.which_key.mappings["e"] = { "<cmd>NeoTreeShowToggle<CR>", "Neotree" }
 -- configure rust-tools
+vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "rust_analyzer" })
+
 local status_ok_rust_tools, rust_tools = pcall(require, "rust-tools")
 if not status_ok_rust_tools then
 	return
 end
+
 local opts = {
 	tools = {
 		executor = require("rust-tools/executors").termopen, -- can be quickfix or termopen
@@ -244,6 +256,7 @@ local opts = {
 	},
 }
 rust_tools.setup(opts)
+
 -- configure crates.nvim
 local status_ok_cmp, cmp = pcall(require, "cmp")
 if not status_ok_cmp then
@@ -257,15 +270,98 @@ vim.api.nvim_create_autocmd("BufRead", {
 	end,
 })
 
-require("lvim.lsp.manager").setup("marksman")
--- -- fab config end
+-- folding powered by treesitter
+-- https://github.com/nvim-treesitter/nvim-treesitter#folding
+-- look for foldenable: https://github.com/neovim/neovim/blob/master/src/nvim/options.lua
+-- Vim cheatsheet, look for folds keys: https://devhints.io/vim
+vim.opt.foldmethod = "expr" -- default is "normal"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()" -- default is ""
+vim.opt.foldenable = false -- if this option is true and fold method option is other than normal, every time a document is opened everything will be folded.
+
+-- configure go related plugins
 --
--- -- Autocommands (`:help autocmd`) <https://neovim.io/doc/user/autocmd.html>
--- vim.api.nvim_create_autocmd("BufRead", {
--- 	pattern = "go",
--- 	callback = function()
--- 		-- let treesitter use bash highlight for zsh files as well
--- 		vim.cmd("setlocal ts=8")
--- 	end,
--- })
 --
+local dap_ok, dapgo = pcall(require, "dap-go")
+if not dap_ok then
+	return
+end
+
+dapgo.setup()
+
+vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "gopls" })
+
+local lsp_manager = require("lvim.lsp.manager")
+lsp_manager.setup("golangci_lint_ls", {
+	on_init = require("lvim.lsp").common_on_init,
+	capabilities = require("lvim.lsp").common_capabilities(),
+})
+
+lsp_manager.setup("gopls", {
+	on_attach = function(client, bufnr)
+		require("lvim.lsp").common_on_attach(client, bufnr)
+		local _, _ = pcall(vim.lsp.codelens.refresh)
+		local map = function(mode, lhs, rhs, desc)
+			if desc then
+				desc = desc
+			end
+
+			vim.keymap.set(mode, lhs, rhs, { silent = true, desc = desc, buffer = bufnr, noremap = true })
+		end
+		local wk = require("which-key")
+		wk.register({
+			["<leader>"] = {
+				["C"] = {
+					name = "Go",
+					["i"] = { "<cmd>GoInstallDeps<cr>", "Install Go Dependencies" },
+					["t"] = { "<cmd>GoMod tidy<cr>", "Tidy" },
+					["a"] = { "<cmd>GoTestAdd<Cr>", "Add Test" },
+					["A"] = { "<cmd>GoTestsAll<Cr>", "Add All Tests" },
+					["e"] = { "<cmd>GoTestsExp<Cr>", "Add Exported Tests" },
+					["g"] = { "<cmd>GoGenerate<Cr>", "Go Generate" },
+					["f"] = { "<cmd>GoGenerate %<Cr>", "Go Generate File" },
+					["c"] = { "<cmd>GoCmt<Cr>", "Generate Comment" },
+				},
+			},
+		}, { prefix = "<leader>" })
+
+		-- lvim.builtin.which_key.mappings["C"]["i"] = { "<cmd>GoInstallDeps<cr>", "Install Go Dependencies" }
+		-- -- map("n", "<leader>Ci", "<cmd>GoInstallDeps<Cr>", "Install Go Dependencies")
+		-- map("n", "<leader>Ct", "<cmd>GoMod tidy<cr>", "Tidy")
+		-- map("n", "<leader>Ca", "<cmd>GoTestAdd<Cr>", "Add Test")
+		-- map("n", "<leader>CA", "<cmd>GoTestsAll<Cr>", "Add All Tests")
+		-- map("n", "<leader>Ce", "<cmd>GoTestsExp<Cr>", "Add Exported Tests")
+		-- map("n", "<leader>Cg", "<cmd>GoGenerate<Cr>", "Go Generate")
+		-- map("n", "<leader>Cf", "<cmd>GoGenerate %<Cr>", "Go Generate File")
+		-- map("n", "<leader>Cc", "<cmd>GoCmt<Cr>", "Generate Comment")
+		-- map("n", "<leader>DT", "<cmd>lua require('dap-go').debug_test()<cr>", "Debug Test")
+	end,
+	on_init = require("lvim.lsp").common_on_init,
+	capabilities = require("lvim.lsp").common_capabilities(),
+	settings = {
+		gopls = {
+			usePlaceholders = true,
+			gofumpt = true,
+			codelenses = {
+				generate = false,
+				gc_details = true,
+				test = true,
+				tidy = true,
+			},
+		},
+	},
+})
+
+local status_ok, gopher = pcall(require, "gopher")
+if not status_ok then
+	return
+end
+
+gopher.setup({
+	commands = {
+		go = "go",
+		gomodifytags = "gomodifytags",
+		gotests = "gotests",
+		impl = "impl",
+		iferr = "iferr",
+	},
+})
