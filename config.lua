@@ -33,11 +33,12 @@ lvim.builtin.which_key.mappings["g"]["m"] = { "<cmd>DiffviewOpen origin/main<cr>
 
 -- -- Change theme settings
 lvim.colorscheme = "oxocarbon"
--- lvim.colorscheme = "zenbones"
+-- lvim.colorscheme = "desert"
 
 lvim.builtin.alpha.active = true
 lvim.builtin.alpha.mode = "dashboard"
 lvim.builtin.terminal.active = true
+lvim.builtin.terminal.direction = "horizontal"
 lvim.builtin.nvimtree.setup.view.side = "left"
 lvim.builtin.nvimtree.setup.renderer.icons.show.git = true
 lvim.builtin.nvimtree.setup.actions.open_file.resize_window = false
@@ -116,6 +117,7 @@ formatters.setup({
 
 lvim.plugins = {
 	{ "mcchrish/zenbones.nvim" },
+	{ "folke/trouble.nvim" },
 	{ "rose-pine/neovim", dependencies = "rktjmp/lush.nvim" },
 	{ "franbach/miramare" },
 	{ "nyoom-engineering/oxocarbon.nvim" },
@@ -365,3 +367,6 @@ gopher.setup({
 		iferr = "iferr",
 	},
 })
+
+require("lspconfig").grammarly.setup({})
+require("lspconfig").jsonls.setup({})
